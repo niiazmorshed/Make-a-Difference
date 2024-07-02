@@ -1,0 +1,46 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@200..900&display=swap');
+
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.banner1 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("https://i.ibb.co/xJBV4kN/13554-1.jpg");
+    background-size: cover;
+    background-position: center;
+    max-width: 1320px;
+    min-height: 550px;
+    border-radius: 24px;
+  }
+  .banner2 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("https://i.ibb.co/vjyn5LD/larm-rmah-AEa-TUnvneik-unsplash-1.jpg");
+    background-size: cover;
+    background-position: center;
+    max-width: 1320px;
+    min-height: 550px;
+    border-radius: 24px;
+  }
+  .banner3 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("https://i.ibb.co/FKc70T3/roman-synkevych-5w-J2-Gi-YSif-A-unsplash-1.jpg");
+    background-size: cover;
+    background-position: center;
+    max-width: 1320px;
+    min-height: 550px;
+    border-radius: 24px;
+  }
+  
+  .footer {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("https://i.ibb.co/WBGLBCK/2149230524-1.jpg");
+    background-size: cover;
+    background-position: center;
+    min-height: 350px;
+  }
