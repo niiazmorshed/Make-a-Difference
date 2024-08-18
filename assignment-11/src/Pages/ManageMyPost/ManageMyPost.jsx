@@ -12,8 +12,6 @@ const ManageMyPost = () => {
   const [personal, setPersonal] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // const [vol, setVol] = useState(personalData);
-
   useEffect(() => {
     fetch(`http://localhost:5174/volunteer/${user.email}`)
       .then((res) => res.json())
