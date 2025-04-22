@@ -13,8 +13,8 @@ app.use(
   cors({
     origin: [ 
       "http://localhost:5174",
-      "https://assignment-11-d16d9.web.app",
-      "assignment-11-d16d9.firebaseapp.com",
+      "https://make-a-difference-90f54.web.app",
+      "https://make-a-difference-90f54.firebaseapp.com",
     ],
     credentials: true,
   })

@@ -11,7 +11,6 @@ const NeedVolunteer = () => {
 const handleSearch = ()=>{
   const searchField = document.getElementById('search');
   const searchText = searchField.value;
-  // console.log(searchText);
   fetch(`http://localhost:5174/search/${searchText}`)
   .then(res=> res.json())
   .then(data=>{
