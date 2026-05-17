@@ -38,6 +38,8 @@ the two sides connect directly.
   Firebase. Server issues a JWT cookie on login for protected endpoints.
 - **Dark mode** — Persisted across sessions.
 - **Responsive design** — Works on mobile, tablet, and desktop.
+- **SEO ready** — Per-page titles, canonical URLs, and Open Graph tags wired
+  through a single `SITE_URL` source of truth.
 
 ---
 
@@ -48,13 +50,15 @@ Make-a-Difference/
 ├── Make_a_Difference_Client/   # React + Vite frontend
 │   ├── src/
 │   │   ├── api.js              # Centralized fetch helpers
+│   │   ├── site.js             # SITE_URL + canonical helper
 │   │   ├── components/         # Shared UI (Thumbnail, etc.)
 │   │   ├── Firebase/           # Firebase auth config
 │   │   ├── Layout/             # Root layout (Navbar + Outlet + Footer)
 │   │   ├── Pages/              # Route-level pages
 │   │   ├── Provider/           # Auth context
 │   │   ├── Routes/             # React Router definitions
-│   │   └── utils/              # Pure helpers
+│   │   └── utils/              # Pure helpers (thumbnail placeholder, etc.)
+│   ├── index.html              # SEO meta + OG tags
 │   ├── vite.config.js          # Vite + dev /api proxy
 │   └── firebase.json           # Hosting config
 └── Make_a_Difference_Server/   # Express API
@@ -147,6 +151,22 @@ vercel --prod
 | `GET` | `/feeds` | All feedback entries |
 | `POST` | `/jwt` | Issue auth cookie |
 | `POST` | `/logout` | Clear auth cookie |
+
+---
+
+## Recent updates
+
+- **SEO** — Added `src/site.js` exposing `SITE_URL` and `canonicalFor(path)`.
+  Each page sets its own `<link rel="canonical">` and the root `index.html`
+  ships full Open Graph + Twitter Card meta tags pointing at the live URL.
+- **Data layer** — Centralized API calls behind `src/api.js`; Vite dev
+  proxy at `/api` removes CORS friction in local development.
+- **UI** — New opportunity card with deadline countdown, organizer avatar,
+  full-card CTA, and closed-state treatment. Cards fall back to a
+  deterministic gradient placeholder when no thumbnail is uploaded.
+- **Forms** — Organizer forms are basic and formal (no URL/photo fields).
+- **Navbar** — Outside-click + Escape close menus instantly; single global
+  Toaster prevents re-render lag.
 
 ---
 
