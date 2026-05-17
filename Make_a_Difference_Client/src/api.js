@@ -4,7 +4,7 @@
 export const API_BASE = import.meta.env.DEV
   ? "/api"
   : import.meta.env.VITE_API_BASE ||
-    "https://assignment-11-server-psi-cyan.vercel.app";
+    "https://make-a-difference-peach.vercel.app";
 
 const buildUrl = (path) =>
   path.startsWith("http")

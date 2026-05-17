@@ -6,7 +6,7 @@ import { defineConfig, loadEnv } from "vite";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const target =
-    env.VITE_API_BASE || "https://assignment-11-server-psi-cyan.vercel.app";
+    env.VITE_API_BASE || "https://make-a-difference-peach.vercel.app";
 
   return {
     plugins: [react()],
