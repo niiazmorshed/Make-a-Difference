@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useLoaderData } from "react-router-dom";
 import { FiGrid, FiList, FiSearch, FiX } from "react-icons/fi";
+import { canonicalFor } from "../../site";
 import NeedVolunteerCard from "./NeedVolunteerCard";
 
 const NeedVolunteer = () => {
@@ -37,6 +38,7 @@ const NeedVolunteer = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>Opportunities | MAD</title>
+        <link rel="canonical" href={canonicalFor("/needvolunteerpage")} />
       </Helmet>
 
       <header className="page-header">

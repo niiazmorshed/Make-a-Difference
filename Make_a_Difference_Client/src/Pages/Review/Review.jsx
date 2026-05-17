@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet";
 import { FaQuoteLeft } from "react-icons/fa";
 import { IoStarSharp } from "react-icons/io5";
+import { canonicalFor } from "../../site";
 
 const reviews = [
   {
@@ -43,6 +44,7 @@ const Review = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>Reviews | MAD</title>
+        <link rel="canonical" href={canonicalFor("/review")} />
       </Helmet>
 
       <header className="page-header">

@@ -1,5 +1,6 @@
 import { NavLink, useLoaderData } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import { SITE_URL } from "../../site";
 import Banner from "../Banner/Banner";
 import HomeCard from "./HomeCard";
 import WeAre from "./WeAre";
@@ -20,7 +21,8 @@ const Home = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>MAD — Volunteer Where It Matters</title>
-        <link rel="canonical" href="https://make-a-difference-90f54.web.app" />
+        <link rel="canonical" href={SITE_URL} />
+        <meta property="og:url" content={SITE_URL} />
       </Helmet>
 
       <ScrollProgress />

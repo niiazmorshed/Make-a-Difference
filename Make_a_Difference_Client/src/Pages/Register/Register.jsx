@@ -6,6 +6,7 @@ import auth from "../../Firebase/firebase.config";
 import { Helmet } from "react-helmet";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { NavLink, useNavigate } from "react-router-dom";
+import { canonicalFor } from "../../site";
 
 const Register = () => {
   const { createUser } = useContext(AuthContext);
@@ -58,6 +59,7 @@ const Register = () => {
     <>
       <Helmet>
         <title>Register | MAD</title>
+        <link rel="canonical" href={canonicalFor("/register")} />
       </Helmet>
 
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">

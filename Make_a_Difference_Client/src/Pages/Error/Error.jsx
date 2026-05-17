@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import { FaArrowLeft, FaHome } from "react-icons/fa";
 import { NavLink, useNavigate, useRouteError } from "react-router-dom";
 import errorAnim from "../../../error.json";
+import { SITE_URL } from "../../site";
 
 const Error = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Error = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>{status} | MAD</title>
+        <link rel="canonical" href={SITE_URL} />
       </Helmet>
 
       <div className="max-w-3xl w-full text-center">

@@ -10,6 +10,7 @@ import { apiDelete, apiGet } from "../../api";
 import Thumbnail from "../../components/Thumbnail";
 import emptyAnim from "../../No Data- 1715763454242.json";
 import { AuthContext } from "../../Provider/ContextProvider";
+import { canonicalFor } from "../../site";
 
 const formatDate = (d) => {
   if (!d) return "Flexible";
@@ -72,6 +73,7 @@ const MyVolReqPost = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>My Requests | MAD</title>
+        <link rel="canonical" href={canonicalFor("/myvolreqpost")} />
       </Helmet>
 
       <header className="page-header">

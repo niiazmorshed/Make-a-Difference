@@ -4,6 +4,7 @@ import { FaQuoteLeft, FaRegCommentDots, FaUserAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { apiGet, apiSend } from "../../api";
 import { AuthContext } from "../../Provider/ContextProvider";
+import { canonicalFor } from "../../site";
 
 const UserFeedBack = () => {
   const { user, loading } = useContext(AuthContext);
@@ -64,6 +65,7 @@ const UserFeedBack = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>Feedback | MAD</title>
+        <link rel="canonical" href={canonicalFor("/userfeedback")} />
       </Helmet>
 
       <header className="page-header">

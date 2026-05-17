@@ -10,6 +10,7 @@ import { apiDelete, apiGet, apiPut } from "../../api";
 import Thumbnail from "../../components/Thumbnail";
 import emptyAnim from "../../No Data- 1715763454242.json";
 import { AuthContext } from "../../Provider/ContextProvider";
+import { canonicalFor } from "../../site";
 
 const CATEGORIES = [
   "Healthcare",
@@ -127,6 +128,7 @@ const ManageMyPost = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>My Posts | MAD</title>
+        <link rel="canonical" href={canonicalFor("/managemypost")} />
       </Helmet>
 
       <header className="page-header">

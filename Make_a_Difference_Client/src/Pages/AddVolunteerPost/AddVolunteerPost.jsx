@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import Swal from "sweetalert2";
 import { apiSend } from "../../api";
 import { AuthContext } from "../../Provider/ContextProvider";
+import { canonicalFor } from "../../site";
 
 const CATEGORIES = [
   "Healthcare",
@@ -59,6 +60,7 @@ const AddVolunteerPost = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>Add Volunteer Post | MAD</title>
+        <link rel="canonical" href={canonicalFor("/addvolunteerpost")} />
       </Helmet>
 
       <header className="page-header">

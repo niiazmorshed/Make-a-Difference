@@ -1,8 +1,43 @@
-# React + Vite
+# Make a Difference — Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for **Make a Difference (MAD)**, a volunteer
+opportunities platform.
 
-Currently, two official plugins are available:
+**Live site:** https://make-a-difference-90f54.web.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+> See the [repo root README](../README.md) for full project info, API
+> reference, and feature list.
+
+---
+
+## Quick start
+
+```bash
+npm install
+npm run dev          # http://localhost:5173
+npm run build        # production bundle into dist/
+npm run preview      # serve the built bundle locally
+firebase deploy --only hosting
+```
+
+## Environment
+
+Create `.env.local`:
+
+```
+VITE_APIKEY=...
+VITE_AUTHDOMAIN=...
+VITE_PROJECTID=...
+VITE_STORAGEBUCKET=...
+VITE_MESSAGINGSENDERID=...
+VITE_APPID=...
+VITE_API_BASE=https://make-a-difference-peach.vercel.app
+```
+
+In dev, all `/api/*` requests are proxied to `VITE_API_BASE` by Vite — see
+`vite.config.js`. This sidesteps CORS for local development.
+
+## Tech
+
+React 18 · React Router 6 · Tailwind CSS · daisyUI · Firebase Auth · AOS ·
+SweetAlert2 · Swiper · Lottie · react-hot-toast

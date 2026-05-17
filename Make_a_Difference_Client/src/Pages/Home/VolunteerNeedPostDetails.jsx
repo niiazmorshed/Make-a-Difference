@@ -14,6 +14,7 @@ import Swal from "sweetalert2";
 import { apiSend } from "../../api";
 import Thumbnail from "../../components/Thumbnail";
 import { AuthContext } from "../../Provider/ContextProvider";
+import { canonicalFor } from "../../site";
 
 const formatDate = (d) => {
   if (!d) return "Flexible";
@@ -93,6 +94,7 @@ const VolunteerNeedPostDetails = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>{info.Post_Title} | MAD</title>
+        <link rel="canonical" href={canonicalFor(`/volunteerneedpostdetails/${id}`)} />
       </Helmet>
 
       <button

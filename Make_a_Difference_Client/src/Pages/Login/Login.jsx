@@ -5,6 +5,7 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Provider/ContextProvider";
+import { canonicalFor } from "../../site";
 
 const Login = () => {
   const { logIn, googleSignIn, gitHubSignIn } = useContext(AuthContext);
@@ -67,6 +68,7 @@ const Login = () => {
     <>
       <Helmet>
         <title>Login | MAD</title>
+        <link rel="canonical" href={canonicalFor("/login")} />
       </Helmet>
 
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
