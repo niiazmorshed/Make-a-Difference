@@ -1,8 +1,9 @@
 import { FaRegCalendarAlt, FaTag } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import Thumbnail from "../../components/Thumbnail";
 
 const HomeCard = ({ cardDetails }) => {
-  const { _id, Thumbnail, Post_Title, Category, Deadline } = cardDetails;
+  const { _id, Thumbnail: thumb, Post_Title, Category, Deadline } = cardDetails;
   return (
     <div
       data-aos="fade-up"
@@ -10,10 +11,12 @@ const HomeCard = ({ cardDetails }) => {
       className="lift-on-hover card bg-base-100 border border-base-200 shadow-md overflow-hidden"
     >
       <figure className="h-52 overflow-hidden">
-        <img
-          src={Thumbnail}
+        <Thumbnail
+          src={thumb}
           alt={Post_Title}
-          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          category={Category}
+          seed={_id}
+          className="transition-transform duration-500 hover:scale-105"
         />
       </figure>
       <div className="p-6">

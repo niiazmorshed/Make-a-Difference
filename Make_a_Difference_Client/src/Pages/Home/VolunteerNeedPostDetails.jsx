@@ -1,382 +1,262 @@
 import { useContext } from "react";
 import { Helmet } from "react-helmet";
-import { BsStopwatch } from "react-icons/bs";
-import { useLoaderData, useParams } from "react-router-dom";
+import {
+  FaArrowLeft,
+  FaEnvelope,
+  FaRegCalendarAlt,
+  FaTag,
+  FaUserAlt,
+  FaUsers,
+} from "react-icons/fa";
+import { FaLocationDot } from "react-icons/fa6";
+import { NavLink, useLoaderData, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import { apiSend } from "../../api";
+import Thumbnail from "../../components/Thumbnail";
 import { AuthContext } from "../../Provider/ContextProvider";
+
+const formatDate = (d) => {
+  if (!d) return "Flexible";
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return d;
+  return date.toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 const VolunteerNeedPostDetails = () => {
   const { user } = useContext(AuthContext);
   const data = useLoaderData();
   const { id } = useParams();
-  const info = data.find((i) => i._id === id);
+  const navigate = useNavigate();
+  const info = Array.isArray(data) ? data.find((i) => i._id === id) : null;
+
+  if (!info) {
+    return (
+      <div className="px-4 py-20 text-center">
+        <h1 className="text-2xl font-bold mb-2">Post not found</h1>
+        <p className="opacity-70 mb-6">
+          This opportunity may have been removed or filled.
+        </p>
+        <NavLink to="/needvolunteerpage">
+          <button className="btn-pill-primary btn h-11 min-h-0 px-6">
+            Back to opportunities
+          </button>
+        </NavLink>
+      </div>
+    );
+  }
+
+  const spotsLeft = Number(info.NoOfVolunteers) || 0;
 
   const handleRequest = (e) => {
     e.preventDefault();
     const form = e.target;
-    const Thumbnail = form.thumbnail.value;
-    const Post_Title = form.post_title.value;
-    const Category = form.category.value;
-    const Location = form.location.value;
-    const NoOfVolunteers = parseInt(form.no_of_volunteers_needed.value);
-    const Deadline = form.deadline.value;
-    const OrganizerName = form.organizer_name.value;
-    const OrganizerEmail = form.organizer_email.value;
-    const Description = form.description.value;
-    const Email = form.email.value;
-    const Name = form.username.value;
-    const Suggestion = form.suggestion.value;
-    const Status = form.status.value;
     const newRequest = {
       _id: id,
-      Thumbnail,
-      Post_Title,
-      Category,
-      Location,
-      NoOfVolunteers: parseInt(NoOfVolunteers),
-      Deadline,
-      OrganizerName,
-      OrganizerEmail,
-      Description,
-      Email,
-      Name,
-      Suggestion,
-      Status,
+      Thumbnail: info.Thumbnail,
+      Post_Title: info.Post_Title,
+      Category: info.Category,
+      Location: info.Location,
+      NoOfVolunteers: spotsLeft,
+      Deadline: info.Deadline,
+      OrganizerName: info.Name,
+      OrganizerEmail: info.Email,
+      Description: info.Description,
+      Email: user?.email,
+      Name: user?.displayName,
+      Suggestion: form.suggestion.value,
+      Status: "Requested",
     };
 
-    // Sending data to another Server
-    fetch("https://assignment-11-server-psi-cyan.vercel.app/request", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(newRequest),
-    })
-      .then((res) => res.json())
+    apiSend("/request", newRequest)
       .then((data) => {
-        console.log(data);
-        if (data.insertedId) {
+        if (data?.insertedId) {
+          document.getElementById("modal")?.close();
           Swal.fire({
-            title: "Success!",
-            text: "Request Successfully",
+            title: "You're in!",
+            text: "Your request was sent to the organizer.",
             icon: "success",
-            confirmButtonText: "Okay",
+            confirmButtonText: "Great",
           });
         }
-      });
+      })
+      .catch(() =>
+        Swal.fire("Something went wrong", "Please try again in a moment.", "error")
+      );
   };
 
   return (
-    <div className="md:grid md: grid-cols-4 gap-6 sm: p-4 min-h-screen mt-12 ">
+    <div className="px-4 md:px-6 py-10 md:py-14">
       <Helmet>
         <meta charSet="utf-8" />
-        <title> {info.Post_Title} |MAD</title>
-        <link rel="canonical" href="http://mysite.com/example" />
+        <title>{info.Post_Title} | MAD</title>
       </Helmet>
-      <div className="col-span-2">
-        <img className="  " src={info?.Thumbnail} alt="" />
-      </div>
-      <div className="col-span-2  p-4">
-        <h1 className="text-3xl font-semibold">{info.Post_Title}</h1>
-        <p className="text-text-base font-semibold text-lg pb-2">
-          {info.subcategory}
-        </p>
-        <p className="text-xl font-bold">Organizer - {info.Name}</p>
-        <p>Email- {info.Email} </p>
-        <br />
-        <p className="font-semibold">{info.Description}</p>
-        <br />
-        <hr className="border-dashed" />
-        <br />
-        <p className="text-lg font-semibold">Category- {info.Category}</p>
-        <p className="text-lg font-semibold">
-          Location-{" "}
-          <span className="text-lg font-bold text-green-600">
-            {info.Location}
-          </span>{" "}
-        </p>
-        <div className="flex items-center justify-between w-[50%] ">
-          <div className="flex items-center font-semibold">
-            <p className="text-lg font-semibold"></p>
-            <BsStopwatch className="text-xl mr-2"></BsStopwatch>
-            <p className="text-red-800">{info.Deadline}</p>
+
+      <button
+        onClick={() => navigate(-1)}
+        className="btn-soft mb-6 inline-flex items-center"
+      >
+        <FaArrowLeft /> Back
+      </button>
+
+      <div className="grid lg:grid-cols-3 gap-8 lg:gap-10">
+        {/* Main column */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="surface-card overflow-hidden">
+            <div className="w-full h-72 md:h-[420px]">
+              <Thumbnail
+                src={info.Thumbnail}
+                alt={info.Post_Title}
+                category={info.Category}
+                seed={info._id}
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 align-middle">
-            <p className="font-bold">
-              Volunteers Needed- {info.NoOfVolunteers}
+          <div className="surface-card p-6 md:p-8">
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="chip"><FaTag className="text-xs" /> {info.Category}</span>
+              <span className="chip chip-amber">
+                <FaLocationDot className="text-xs" /> {info.Location || "Remote"}
+              </span>
+              <span className="chip chip-emerald">
+                <FaRegCalendarAlt className="text-xs" /> {formatDate(info.Deadline)}
+              </span>
+            </div>
+            <h1 className="text-2xl md:text-4xl font-extrabold leading-tight mb-3">
+              {info.Post_Title}
+            </h1>
+            <p className="opacity-80 leading-relaxed whitespace-pre-line">
+              {info.Description}
             </p>
           </div>
-        </div>
-        <br />
 
-        <div className="flex justify-center">
-            {
-              info.NoOfVolunteers>0 ?            <button
-              onClick={() => document.getElementById("modal").showModal()}
-              className=" bg-green-600 text-white btn   md:btn-md lg:btn-lg"
-            >
-              Be a Volunteer
-            </button>
-            : <h1 className="text-3xl font-semibold text-center" >Can Not Apply</h1>
-            }
-
-          <dialog id="modal" className="modal">
-            {/* Modal Starts */}
-            <div className="modal-box w-11/12 max-w-5xl">
-              <div>
-                <div>
-                  <h2 className="text-3xl font-extrabold text-center pb-10">
-                    Be a Volunteer
-                  </h2>
-                  <form onSubmit={handleRequest}>
-                    {/* form name and quantity row */}
-                    <div className="md:flex mb-8">
-                      <div className="form-control md:w-1/2">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Thumbnail
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Thumbnail}
-                            type="text"
-                            name="thumbnail"
-                            placeholder="Thumbnail"
-                            className="input input-bordered w-full"
-                            readOnly
-                          />
-                        </label>
-                      </div>
-                      <div className="form-control md:w-1/2 md:ml-4">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Post Title
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Post_Title}
-                            type="text"
-                            name="post_title"
-                            placeholder="Post Title"
-                            className="input input-bordered w-full"
-                            readOnly
-                          />
-                        </label>
-                      </div>
-                    </div>
-                    {/* -----====================>>>>>>>>>>>>>>>>>>> */}
-                    <div className="md:flex mb-8">
-                      <div className="form-control md:w-1/2">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Category
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Category}
-                            readOnly
-                            type="tel"
-                            name="category"
-                            placeholder="Category"
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                      <div className="form-control md:w-1/2 md:ml-4">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Location
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Location}
-                            readOnly
-                            type="text"
-                            name="location"
-                            placeholder="Location"
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                    {/* {=========================>>>>/} */}
-                    <div className="md:flex md:mb-8">
-                      <div className="form-control md:w-1/2">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            No. of volunteers
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.NoOfVolunteers}
-                            readOnly
-                            type="number"
-                            name="no_of_volunteers_needed"
-                            placeholder="No. of volunteers needed"
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                      <div className="form-control md:w-1/2 md:ml-4">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Deadline
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Deadline}
-                            readOnly
-                            type="date"
-                            name="deadline"
-                            placeholder="Deadline"
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                    <div className="md:flex mb-8">
-                      <div className="form-control md:w-1/2">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Organizer name
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Name}
-                            type="text"
-                            name="organizer_name"
-                            placeholder="Please Enter the Name of your Organizer"
-                            className="input input-bordered w-full"
-                            readOnly
-                          />
-                        </label>
-                      </div>
-                      <div className="form-control md:w-1/2 md:ml-4">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Organizer Email
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Email}
-                            readOnly
-                            type="email"
-                            name="organizer_email"
-                            placeholder="Please Enter the Email of your Organizer"
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="md:flex mb-8">
-                      <div className="form-control md:w-1/2">
-                        <label className="label">
-                          <span className="label-text">Name</span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={user?.displayName}
-                            type="text"
-                            name="username"
-                            placeholder="Logged in User Name"
-                            className="input input-bordered w-full"
-                            readOnly
-                          />
-                        </label>
-                      </div>
-                      <div className="form-control md:w-1/2 md:ml-4">
-                        <label className="label">
-                          <span className="label-text">Email</span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={user?.email}
-                            type="text"
-                            name="email"
-                            placeholder="Logged in User Email"
-                            className="input input-bordered w-full"
-                            readOnly
-                          />
-                        </label>
-                      </div>
-                    </div>
-                    {/* form Photo url row */}
-                    <div className="mb-8">
-                      <div className="form-control w-full">
-                        <label className="label">
-                          <span className="label-text text-xl font-semibold">
-                            Description
-                          </span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={info.Description}
-                            readOnly
-                            type="text"
-                            name="description"
-                            placeholder="Please Enter a Description"
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                    <div className="md:flex mb-8">
-                      <div className="form-control md:w-1/2">
-                        <label className="label">
-                          <span className="label-text">Suggestion</span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={"Enter Your Suggestions"}
-                            type="text"
-                            name="suggestion"
-                            placeholder=""
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                      <div className="form-control md:w-1/2 md:ml-4">
-                        <label className="label">
-                          <span className="label-text">Status</span>
-                        </label>
-                        <label className="input-group">
-                          <input
-                            defaultValue={"Requested"}
-                            type="text"
-                            name="status"
-                            className="input input-bordered w-full"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                    <input
-                      type="submit"
-                      value="Request"
-                      className="btn btn-block btn-accent"
-                    />
-                  </form>
-                </div>
+          <div className="surface-card p-6 md:p-8">
+            <h2 className="text-lg font-bold mb-4">Organizer</h2>
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-xl">
+                <FaUserAlt />
               </div>
-              <div className="modal-action">
-                <form method="dialog">
-                  {/* if there is a button, it will close the modal */}
-                  <button className="btn">Close</button>
-                </form>
+              <div>
+                <p className="font-semibold text-lg">{info.Name}</p>
+                <a
+                  href={`mailto:${info.Email}`}
+                  className="meta-row text-sky-600 hover:underline"
+                >
+                  <FaEnvelope /> {info.Email}
+                </a>
               </div>
             </div>
-          </dialog>
+          </div>
         </div>
+
+        {/* Sticky apply card */}
+        <aside className="lg:sticky lg:top-24 self-start">
+          <div className="surface-card p-6 md:p-7 space-y-5">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] opacity-60 font-semibold mb-1">
+                Volunteers needed
+              </p>
+              <p className="text-4xl font-extrabold">
+                {spotsLeft}
+                <span className="text-base opacity-60 font-medium"> open spot{spotsLeft === 1 ? "" : "s"}</span>
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-3 border-t border-base-200">
+              <div className="meta-row"><FaRegCalendarAlt /> Deadline: <strong className="ml-1">{formatDate(info.Deadline)}</strong></div>
+              <div className="meta-row"><FaLocationDot /> {info.Location || "Remote"}</div>
+              <div className="meta-row"><FaTag /> {info.Category}</div>
+              <div className="meta-row"><FaUsers /> Organized by {info.Name}</div>
+            </div>
+
+            {spotsLeft > 0 ? (
+              <button
+                onClick={() => document.getElementById("modal").showModal()}
+                className="btn-pill-primary btn w-full h-12 min-h-0"
+              >
+                Be a volunteer
+              </button>
+            ) : (
+              <div className="text-center py-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 font-semibold">
+                All spots filled — check back soon
+              </div>
+            )}
+
+            <p className="text-xs opacity-60 text-center">
+              Free to apply. The organizer will reach out via email.
+            </p>
+          </div>
+        </aside>
       </div>
+
+      {/* Apply modal */}
+      <dialog id="modal" className="modal">
+        <div className="modal-box max-w-2xl bg-base-100 p-0 rounded-2xl">
+          <div className="p-6 md:p-8 border-b border-base-200">
+            <h2 className="text-2xl font-bold">Confirm your application</h2>
+            <p className="opacity-70 text-sm mt-1">
+              You&apos;re applying to <strong>{info.Post_Title}</strong>. Add a short note
+              for the organizer below.
+            </p>
+          </div>
+
+          <form onSubmit={handleRequest} className="p-6 md:p-8 space-y-5">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="field-label">Your name</label>
+                <input
+                  defaultValue={user?.displayName || ""}
+                  name="username"
+                  className="field-input"
+                  readOnly
+                />
+              </div>
+              <div>
+                <label className="field-label">Your email</label>
+                <input
+                  defaultValue={user?.email || ""}
+                  name="email"
+                  className="field-input"
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="field-label">Suggestion / note to organizer</label>
+              <textarea
+                name="suggestion"
+                placeholder="Anything you'd like the organizer to know? (optional)"
+                className="field-input field-textarea"
+                defaultValue=""
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="submit"
+                className="btn-pill-primary btn h-12 min-h-0 px-6 flex-1"
+              >
+                Submit request
+              </button>
+              <button
+                type="button"
+                onClick={() => document.getElementById("modal").close()}
+                className="btn-pill-ghost btn h-12 min-h-0 px-6"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
   );
 };

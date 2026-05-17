@@ -1,88 +1,85 @@
-import Lottie from "lottie-react";
 import { Helmet } from "react-helmet";
-import review from "../../Animation - 1714467221537.json";
+import { FaQuoteLeft } from "react-icons/fa";
 import { IoStarSharp } from "react-icons/io5";
+
+const reviews = [
+  {
+    name: "Anika Rahman",
+    role: "Weekend Volunteer, Dhaka",
+    avatar: "https://i.ibb.co/9b7XsgL/wallpaperflare-com-wallpaper-2.jpg",
+    rating: 5,
+    text:
+      "I stumbled upon MAD while searching for ways to give back on weekends, and it instantly clicked. The platform makes it effortless to find local opportunities that match my schedule. I've already joined three clean-up drives and met some genuinely wonderful people.",
+  },
+  {
+    name: "Tanvir Hossain",
+    role: "Community Organizer, Chittagong",
+    avatar: "https://i.ibb.co/N64tgkY/HD-wallpaper-robert-pattinson-batman-3d-model.jpg",
+    rating: 5,
+    text:
+      "As someone running monthly food drives, MAD has been a game-changer. Posting a need takes less than two minutes and we consistently reach motivated volunteers. The team behind the platform is responsive and clearly cares about impact.",
+  },
+  {
+    name: "Sumaiya Akter",
+    role: "First-time Volunteer",
+    avatar: "https://i.ibb.co/HVsyCjh/wallpaperflare-com-wallpaper-1-1.jpg",
+    rating: 5,
+    text:
+      "I had never volunteered before and felt intimidated. MAD walked me through everything — from filters to applying — and the organizer reached out the same day. It's now part of my monthly routine.",
+  },
+];
+
+const Stars = ({ count }) => (
+  <div className="flex gap-0.5 text-amber-400">
+    {Array.from({ length: count }).map((_, i) => (
+      <IoStarSharp key={i} />
+    ))}
+  </div>
+);
 
 const Review = () => {
   return (
-<div className="md: flex flex-col justify-center items-center">
+    <div className="px-4 md:px-6 pb-20">
       <Helmet>
         <meta charSet="utf-8" />
-        <title>Review|MAD</title>
-        <link rel="canonical" href="http://mysite.com/example" />
+        <title>Reviews | MAD</title>
       </Helmet>
-      <div className="md: w-[500px] ">
-        <Lottie animationData={review} loop={true}></Lottie>
-      </div>
-      {/* Card --- */}
-      <div
-        data-aos="fade-up"
-        data-aos-duration="2000"
-        className="md: grid md:grid-cols-3 md: gap-4 mt-20 sm:grid-cols-1"
-      >
-        <div className="card md:w-96 bg-base-100 shadow-xl">
-          <figure className=" rounded-full ">
-            <img src="https://i.ibb.co/9b7XsgL/wallpaperflare-com-wallpaper-2.jpg" />
-          </figure>
-          <div className="card-body">
-            <h1 className="text-center text-xl font-bold">Thomas Shelby</h1>
-            <div className="flex justify-center items-center">
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
+
+      <header className="page-header">
+        <p className="eyebrow">Loved by volunteers</p>
+        <h1>What our <span className="text-gradient">community</span> says</h1>
+        <p>
+          Stories from people who use Make a Difference to give back, organize
+          causes, and connect with their community.
+        </p>
+      </header>
+
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {reviews.map((r, i) => (
+          <article
+            key={r.name}
+            data-aos="fade-up"
+            data-aos-delay={i * 120}
+            className="surface-card p-6 md:p-7 flex flex-col"
+          >
+            <FaQuoteLeft className="text-3xl text-sky-500/60 mb-4" />
+            <p className="opacity-85 leading-relaxed flex-1">
+              {r.text}
+            </p>
+            <div className="mt-6 pt-5 border-t border-base-200 flex items-center gap-3">
+              <img
+                src={r.avatar}
+                alt={r.name}
+                className="w-12 h-12 rounded-full object-cover ring-2 ring-sky-500/30"
+              />
+              <div className="flex-1">
+                <p className="font-bold">{r.name}</p>
+                <p className="text-xs opacity-70">{r.role}</p>
+              </div>
+              <Stars count={r.rating} />
             </div>
-            <div>
-              <p>
-                I am Thomas Shelby <br />
-                I stumbled upon MAD while searching for volunteer opportunities in my area, and I am so glad I did! The website is incredibly user-friendly, making it easy to find volunteer opportunities that match my interests and schedule. The variety of projects available is impressive, and the registration process was seamless. I have already participated in several events and met wonderful people along the way. Thank you for providing such a valuable platform for community engagement!.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="card w-96 bg-base-100 shadow-xl">
-          <figure className=" rounded-full ">
-            <img src="https://i.ibb.co/N64tgkY/HD-wallpaper-robert-pattinson-batman-3d-model.jpg" />
-          </figure>
-          <div className="card-body">
-            <h1 className="text-center text-xl font-bold">Bruce Wayne</h1>
-            <div className="flex justify-center items-center">
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-            </div>
-            <div>
-              <p>
-                I am Bruce Wayne <br />
-                As someone deeply invested in community development, I have had the pleasure of collaborating with MAD on various initiatives. Their website serves as a hub for bringing together volunteers and organizations in need, streamlining the process of organizing and participating in community projects. The team behind the platform is dedicated and responsive, ensuring that both volunteers and organizations receive the support they need. MAD has become an indispensable tool in our efforts to create a stronger, more connected community.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="card w-96 bg-base-100 shadow-xl">
-          <figure className=" rounded-full ">
-            <img src="https://i.ibb.co/HVsyCjh/wallpaperflare-com-wallpaper-1-1.jpg" />
-          </figure>
-          <div className="card-body">
-            <h1 className="text-center text-xl font-bold">King Ragnar</h1>
-            <div className="flex justify-center items-center">
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-              <IoStarSharp />
-            </div>
-            <div>
-              <p>
-                I am Ragnar Lothbrok <br />
-                I recently decided to start volunteering but did not know where to begin. Thankfully, I came across MAD website, and it has been a game-changer for me. The website is so intuitive, guiding me through the process of finding volunteer opportunities that match my interests and availability. I love how I can track my volunteer hours and connect with other volunteers through the platform. It has been an enriching experience so far, and I am excited to continue my journey with MAD.
-              </p>
-            </div>
-          </div>
-        </div>
+          </article>
+        ))}
       </div>
     </div>
   );

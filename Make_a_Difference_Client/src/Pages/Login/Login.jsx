@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { Helmet } from "react-helmet";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -154,7 +154,6 @@ const Login = () => {
           </p>
         </div>
 
-        <Toaster position="top-center" reverseOrder={false} />
       </div>
     </>
   );

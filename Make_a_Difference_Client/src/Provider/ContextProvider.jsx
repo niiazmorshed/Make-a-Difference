@@ -12,6 +12,7 @@ import axios from "axios";
 import PropTypes from "prop-types";
 import { createContext, useEffect, useRef, useState } from "react";
 import auth from "../Firebase/firebase.config";
+import { API_BASE } from "../api";
 
 export const AuthContext = createContext(null);
 const googleProvider = new GoogleAuthProvider();
@@ -54,10 +55,6 @@ const ContextProvider = ({ children }) => {
   const isInitialAuthEvent = useRef(true);
 
   useEffect(() => {
-    const apiBase =
-      import.meta.env.VITE_API_BASE ||
-      "https://assignment-11-server-psi-cyan.vercel.app";
-
     const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
       const previouslyAnonymous = isInitialAuthEvent.current && !currentUser;
       isInitialAuthEvent.current = false;
@@ -70,7 +67,7 @@ const ContextProvider = ({ children }) => {
       const endpoint = currentUser ? "/jwt" : "/logout";
       axios
         .post(
-          `${apiBase}${endpoint}`,
+          `${API_BASE}${endpoint}`,
           { email: currentUser?.email },
           { withCredentials: true }
         )

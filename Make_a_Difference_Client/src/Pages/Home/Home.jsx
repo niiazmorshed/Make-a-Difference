@@ -56,11 +56,21 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map((i) => (
-              <HomeCard key={i._id} cardDetails={i} />
-            ))}
-          </div>
+          {featured.length === 0 ? (
+            <div className="empty-state max-w-2xl mx-auto">
+              <h3 className="text-xl font-bold mb-1">No opportunities to show yet</h3>
+              <p className="opacity-70 max-w-md">
+                We couldn&apos;t reach the server, or there aren&apos;t any open
+                posts right now. Try refreshing in a moment.
+              </p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featured.map((i) => (
+                <HomeCard key={i._id} cardDetails={i} />
+              ))}
+            </div>
+          )}
 
           <div className="flex justify-center mt-12" data-aos="fade-up">
             <NavLink to="/needvolunteerpage">

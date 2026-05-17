@@ -1,10 +1,8 @@
-import { useContext, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { AuthContext } from "../../Provider/ContextProvider";
-import toast, { Toaster } from "react-hot-toast";
-import "react-tooltip/dist/react-tooltip.css";
-import { Tooltip as ReactTooltip } from "react-tooltip";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { FiChevronDown, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import toast from "react-hot-toast";
+import { NavLink, useLocation } from "react-router-dom";
+import { AuthContext } from "../../Provider/ContextProvider";
 import Dark from "../Dark Mode/Dark";
 
 const navLinks = [
@@ -20,21 +18,60 @@ const profileLinks = [
   { to: "/managemypost", label: "Manage My Posts" },
 ];
 
+const linkClass = ({ isActive }) =>
+  `nav-link inline-block${isActive ? " active" : ""}`;
+
 const Navbar = () => {
   const { user, logOut } = useContext(AuthContext);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+  const location = useLocation();
 
-  const handleLogOut = () => {
+  // Close menus on route change — instant, no animation lag.
+  useEffect(() => {
+    setMobileOpen(false);
+    setProfileOpen(false);
+  }, [location.pathname]);
+
+  // Click-outside for profile dropdown — no setTimeout delay.
+  useEffect(() => {
+    if (!profileOpen) return;
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [profileOpen]);
+
+  // Close mobile menu / dropdown on Escape.
+  useEffect(() => {
+    if (!mobileOpen && !profileOpen) return;
+    const handler = (e) => {
+      if (e.key === "Escape") {
+        setMobileOpen(false);
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [mobileOpen, profileOpen]);
+
+  const handleLogOut = useCallback(() => {
     logOut()
       .then(() => toast.success("Signed out"))
-      .catch((error) => console.error(error));
-  };
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+        toast.error("Sign-out failed");
+      });
+  }, [logOut]);
 
   return (
     <header className="sticky top-0 z-50 bg-base-100/85 backdrop-blur-md border-b border-base-200">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between gap-4">
-        {/* Brand */}
         <NavLink
           to="/"
           className="flex items-center gap-2 text-lg md:text-xl font-extrabold tracking-tight"
@@ -48,26 +85,32 @@ const Navbar = () => {
         {/* Desktop links */}
         <nav className="hidden lg:flex items-center gap-1">
           {navLinks.map((l) => (
-            <NavLink key={l.to} to={l.to} end={l.end}>
-              <span className="nav-link inline-block">{l.label}</span>
+            <NavLink key={l.to} to={l.to} end={l.end} className={linkClass}>
+              {l.label}
             </NavLink>
           ))}
 
           {user && (
-            <div className="relative">
+            <div ref={profileRef} className="relative">
               <button
+                type="button"
                 onClick={() => setProfileOpen((v) => !v)}
-                onBlur={() => setTimeout(() => setProfileOpen(false), 150)}
                 className="nav-link inline-flex items-center gap-1"
+                aria-expanded={profileOpen}
+                aria-haspopup="menu"
               >
                 My Profile <FiChevronDown className="text-sm" />
               </button>
               {profileOpen && (
-                <ul className="absolute right-0 mt-2 w-56 bg-base-100 border border-base-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <ul
+                  role="menu"
+                  className="absolute right-0 mt-2 w-56 bg-base-100 border border-base-200 rounded-xl shadow-lg overflow-hidden py-1"
+                >
                   {profileLinks.map((l) => (
-                    <li key={l.to}>
+                    <li key={l.to} role="none">
                       <NavLink
                         to={l.to}
+                        role="menuitem"
                         className="block px-4 py-2 text-sm hover:bg-base-200 transition"
                       >
                         {l.label}
@@ -87,8 +130,8 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-2 md:gap-3">
               <div
-                id="profile-avatar"
-                className="w-10 h-10 rounded-full ring-2 ring-sky-500/30 overflow-hidden"
+                title={user.displayName || user.email}
+                className="w-10 h-10 rounded-full ring-2 ring-sky-500/30 overflow-hidden shrink-0"
               >
                 <img
                   src={
@@ -97,20 +140,18 @@ const Navbar = () => {
                   }
                   alt={user.displayName || "Profile"}
                   className="w-full h-full object-cover"
-                />
-                <ReactTooltip
-                  anchorId="profile-avatar"
-                  place="bottom"
-                  content={user.displayName || user.email}
+                  loading="lazy"
                 />
               </div>
               <button
+                type="button"
                 onClick={handleLogOut}
                 className="btn-nav btn-nav-outline hidden sm:inline-flex"
               >
                 <FiLogOut /> Logout
               </button>
               <button
+                type="button"
                 onClick={handleLogOut}
                 aria-label="Logout"
                 className="btn-nav btn-nav-outline sm:hidden w-10 p-0 justify-center"
@@ -120,19 +161,20 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
-              <NavLink to="/login">
-                <button className="btn-nav btn-nav-outline">Login</button>
+              <NavLink to="/login" className="btn-nav btn-nav-outline">
+                Login
               </NavLink>
-              <NavLink to="/register">
-                <button className="btn-nav btn-nav-solid">Register</button>
+              <NavLink to="/register" className="btn-nav btn-nav-solid">
+                Register
               </NavLink>
             </div>
           )}
 
-          {/* Mobile menu trigger */}
           <button
+            type="button"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
             className="lg:hidden btn-nav btn-nav-outline w-10 p-0 justify-center"
           >
             {mobileOpen ? <FiX /> : <FiMenu />}
@@ -149,7 +191,6 @@ const Navbar = () => {
                 key={l.to}
                 to={l.to}
                 end={l.end}
-                onClick={() => setMobileOpen(false)}
                 className="px-4 py-3 rounded-lg hover:bg-base-200 font-semibold"
               >
                 {l.label}
@@ -160,7 +201,6 @@ const Navbar = () => {
                 <NavLink
                   key={l.to}
                   to={l.to}
-                  onClick={() => setMobileOpen(false)}
                   className="px-4 py-3 rounded-lg hover:bg-base-200 font-semibold"
                 >
                   {l.label}
@@ -168,23 +208,23 @@ const Navbar = () => {
               ))}
             {!user && (
               <div className="grid grid-cols-2 gap-2 mt-3">
-                <NavLink to="/login" onClick={() => setMobileOpen(false)}>
-                  <button className="btn-nav btn-nav-outline w-full justify-center">
-                    Login
-                  </button>
+                <NavLink
+                  to="/login"
+                  className="btn-nav btn-nav-outline w-full justify-center"
+                >
+                  Login
                 </NavLink>
-                <NavLink to="/register" onClick={() => setMobileOpen(false)}>
-                  <button className="btn-nav btn-nav-solid w-full justify-center">
-                    Register
-                  </button>
+                <NavLink
+                  to="/register"
+                  className="btn-nav btn-nav-solid w-full justify-center"
+                >
+                  Register
                 </NavLink>
               </div>
             )}
           </nav>
         </div>
       )}
-
-      <Toaster position="top-center" reverseOrder={false} />
     </header>
   );
 };

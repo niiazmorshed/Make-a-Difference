@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { AuthContext } from "../../Provider/ContextProvider";
 import { updateProfile } from "firebase/auth";
 import auth from "../../Firebase/firebase.config";
@@ -150,7 +150,6 @@ const Register = () => {
           </p>
         </div>
 
-        <Toaster position="top-center" reverseOrder={false} />
       </div>
     </>
   );

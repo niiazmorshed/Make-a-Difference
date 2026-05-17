@@ -12,18 +12,7 @@ import Register from "../Pages/Register/Register";
 import Review from "../Pages/Review/Review";
 import UserFeedBack from "../Pages/User Feedback/UserFeedBack";
 import PrivateRoute from "./PrivateRoute";
-
-const API = "https://assignment-11-server-psi-cyan.vercel.app";
-
-const safeFetch = async (url, options = {}) => {
-  try {
-    const res = await fetch(url, options);
-    if (!res.ok) return [];
-    return await res.json();
-  } catch {
-    return [];
-  }
-};
+import { apiGet } from "../api";
 
 const router = createBrowserRouter([
   {
@@ -34,7 +23,7 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home></Home>,
-        loader: () => safeFetch(`${API}/volunteer`),
+        loader: () => apiGet("/volunteer"),
       },
       {
         path: "/login",
@@ -59,7 +48,7 @@ const router = createBrowserRouter([
             <VolunteerNeedPostDetails></VolunteerNeedPostDetails>
           </PrivateRoute>
         ),
-        loader: () => safeFetch(`${API}/volunteerall`),
+        loader: () => apiGet("/volunteerall"),
       },
       {
         path: "/needvolunteerpage",
@@ -68,8 +57,7 @@ const router = createBrowserRouter([
             <NeedVolunteer></NeedVolunteer>
           </PrivateRoute>
         ),
-        loader: () =>
-          safeFetch(`${API}/volunteerall`, { credentials: "include" }),
+        loader: () => apiGet("/volunteerall"),
       },
       {
         path: "/managemypost",

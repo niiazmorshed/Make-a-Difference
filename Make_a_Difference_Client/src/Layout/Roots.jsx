@@ -1,7 +1,8 @@
-import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import Navbar from "../Pages/Navbar/Navbar";
+import { Toaster } from "react-hot-toast";
+import { Outlet, useLocation } from "react-router-dom";
 import Footer from "../Pages/Footer/Footer";
+import Navbar from "../Pages/Navbar/Navbar";
 
 const Roots = () => {
   const { pathname } = useLocation();
@@ -19,6 +20,7 @@ const Roots = () => {
         </div>
       </main>
       <Footer />
+      <Toaster position="top-center" reverseOrder={false} />
     </div>
   );
 };

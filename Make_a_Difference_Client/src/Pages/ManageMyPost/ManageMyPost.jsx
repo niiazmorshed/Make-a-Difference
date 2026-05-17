@@ -1,15 +1,53 @@
 import Lottie from "lottie-react";
 import { useContext, useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
+import { FaPlus, FaRegCalendarAlt, FaTag } from "react-icons/fa";
+import { FaLocationDot } from "react-icons/fa6";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { NavLink } from "react-router-dom";
 import Swal from "sweetalert2";
-import review from "../../No Data- 1715763454242.json";
+import { apiDelete, apiGet, apiPut } from "../../api";
+import Thumbnail from "../../components/Thumbnail";
+import emptyAnim from "../../No Data- 1715763454242.json";
 import { AuthContext } from "../../Provider/ContextProvider";
+
+const CATEGORIES = [
+  "Healthcare",
+  "Education",
+  "Social Service",
+  "Environmental Conservation",
+  "Animal Welfare",
+  "Disaster Relief",
+  "Community Development",
+  "Other",
+];
+
+const formatDate = (d) => {
+  if (!d) return "Flexible";
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return d;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const SkeletonCard = () => (
+  <div className="surface-card overflow-hidden">
+    <div className="skeleton-block h-44" />
+    <div className="p-5 space-y-3">
+      <div className="skeleton-block h-4 w-1/3" />
+      <div className="skeleton-block h-5 w-3/4" />
+      <div className="skeleton-block h-4 w-1/2" />
+    </div>
+  </div>
+);
 
 const ManageMyPost = () => {
   const { user } = useContext(AuthContext);
   const [personalData, setPersonalData] = useState([]);
-  const [personal, setPersonal] = useState([]);
+  const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,404 +55,285 @@ const ManageMyPost = () => {
       setLoading(false);
       return;
     }
-    fetch(
-      `https://assignment-11-server-psi-cyan.vercel.app/volunteer/${user.email}`
-    )
-      .then((res) => (res.ok ? res.json() : []))
+    apiGet(`/volunteer/${user.email}`)
       .then((data) => setPersonalData(Array.isArray(data) ? data : []))
-      .catch(() => setPersonalData([]))
       .finally(() => setLoading(false));
   }, [user?.email]);
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center">
-        <span className="loading loading-dots loading-lg"></span>
-      </div>
-    );
-  }
+
+  const openEdit = (post) => {
+    setEditing(post);
+    setTimeout(() => document.getElementById("update-modal")?.showModal(), 0);
+  };
 
   const handleUpdate = (e) => {
     e.preventDefault();
     const form = e.target;
-    const Thumbnail = form.thumbnail.value;
-    const Post_Title = form.post_title.value;
-    const Category = form.category.value;
-    const Location = form.location.value;
-    const NoOfVolunteers = form.no_of_volunteers_needed.value;
-    const Deadline = form.deadline.value;
-    const OrganizerName = form.organizer_name.value;
-    const OrganizerEmail = form.organizer_email.value;
-    const Description = form.description.value;
-    const Email = form.email.value;
-    const Name = form.username.value;
-
-    const newUpdate = {
-      Thumbnail,
-      Post_Title,
-      Category,
-      Location,
-      NoOfVolunteers,
-      Deadline,
-      OrganizerName,
-      OrganizerEmail,
-      Description,
-      Email,
-      Name,
+    const update = {
+      Thumbnail: editing.Thumbnail || "",
+      Post_Title: form.post_title.value.trim(),
+      Category: form.category.value,
+      Location: form.location.value.trim(),
+      NoOfVolunteers: parseInt(form.no_of_volunteers_needed.value, 10),
+      Deadline: form.deadline.value,
+      OrganizerName: form.organizer_name.value.trim(),
+      OrganizerEmail: form.organizer_email.value.trim(),
+      Description: form.description.value.trim(),
+      Email: editing.Email,
+      Name: editing.Name,
     };
 
-    // Sending Data to the server for Update
-    fetch(
-      `https://assignment-11-server-psi-cyan.vercel.app/updatevol/${personal._id}`,
-      {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(newUpdate),
-      }
-    )
-      .then((res) => res.json())
+    apiPut(`/updatevol/${editing._id}`, update)
       .then((data) => {
-        if (data?.modifiedCount > 0) {
+        if (data?.modifiedCount > 0 || data?.upsertedId) {
           Swal.fire({
-            title: "Success!",
-            text: "Post updated successfully",
+            title: "Updated",
+            text: "Your post has been updated.",
             icon: "success",
             confirmButtonText: "Okay",
           });
           setPersonalData((prev) =>
-            prev.map((p) =>
-              p._id === personal._id ? { ...p, ...newUpdate } : p
-            )
+            prev.map((p) => (p._id === editing._id ? { ...p, ...update } : p))
           );
+          document.getElementById("update-modal")?.close();
         }
       })
-      .catch(() =>
-        Swal.fire("Error", "Could not update the post.", "error")
-      );
-    form.reset();
-  };
-
-  const handleDataFetch = (id) => {
-    fetch(`https://assignment-11-server-psi-cyan.vercel.app/vol/${id}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setPersonal(data || {}))
-      .catch(() => setPersonal({}));
+      .catch(() => Swal.fire("Error", "Could not update the post.", "error"));
   };
 
   const handleDelete = (_id) => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: "Delete this post?",
+      text: "This can't be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, delete",
     }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(
-          `https://assignment-11-server-psi-cyan.vercel.app/deletevol/${_id}`,
-          { method: "DELETE" }
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            if (data?.deletedCount > 0) {
-              Swal.fire("Deleted!", "Your post has been deleted.", "success");
-              setPersonalData((prev) => prev.filter((p) => p._id !== _id));
-            }
-          })
-          .catch(() => Swal.fire("Error", "Could not delete the post.", "error"));
-      }
+      if (!result.isConfirmed) return;
+      apiDelete(`/deletevol/${_id}`)
+        .then((data) => {
+          if (data?.deletedCount > 0) {
+            Swal.fire("Deleted", "Your post is gone.", "success");
+            setPersonalData((prev) => prev.filter((p) => p._id !== _id));
+          }
+        })
+        .catch(() => Swal.fire("Error", "Could not delete the post.", "error"));
     });
   };
 
   return (
-    <div>
-      <div className="flex justify-center items-center mb-10 p-4">
-        <h1 className="font-semibold text-4xl">My Post</h1>
-      </div>
-      <div className="overflow-x-auto">
-        <Helmet>
-          <meta charSet="utf-8" />
-          <title>My Post| MAD</title>
-          <link rel="canonical" href="http://mysite.com/example" />
-        </Helmet>
-        {personalData.length > 0 ? (
-          <table className="table md:table-lg">
-            <thead>
-              <tr>
-                <th></th>
-                <th className=" text-3xl font-semibold text-center">
-                  User Name
-                </th>
-                <th className=" text-3xl font-semibold text-center">
-                  User Email
-                </th>
-                <th className=" text-3xl font-semibold text-center">
-                  Post Title
-                </th>
-              </tr>
-            </thead>
-            <tbody className="">
-              {personalData.map((i) => (
-                <tr className="" key={i._id}>
-                  <th></th>
-                  <td className=" text-xl text-center">{i.Name}</td>
-                  <td className=" text-xl text-center">{i.Email}</td>
-                  <td className=" text-xl text-center">{i.Post_Title}</td>
-                  <Link>
-                    {" "}
-                    <td className="">
-                      <button
-                        onClick={() => {
-                          document.getElementById("modal").showModal();
-                          handleDataFetch(i._id);
-                        }}
-                        className="btn btn-outline btn-accent"
-                      >
-                        Update
-                      </button>
-                    </td>
-                  </Link>
-                  <Link>
-                    {" "}
-                    <td>
-                      <button
-                        onClick={() => handleDelete(i._id)}
-                        className="btn btn-outline btn-error"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </Link>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <div className=" lg:flex lg: justify-center  ">
-            <Lottie animationData={review} loop={true}></Lottie>
-          </div>
-        )}
-      </div>
-      {/* Modal Starts */}
-      <div className="flex justify-center">
-        <dialog id="modal" className="modal">
-          <div className="modal-box w-11/12 max-w-5xl">
-            <div>
-              <div>
-                <h2 className="text-3xl font-extrabold text-center pb-10">
-                  Be a Volunteer
-                </h2>
-                <form onSubmit={handleUpdate}>
-                  <div className="md:flex mb-8">
-                    <div className="form-control md:w-1/2">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Thumbnail
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Thumbnail}
-                          type="text"
-                          name="thumbnail"
-                          placeholder="Thumbnail"
-                          className="input input-bordered w-full"
-                        />
-                      </label>
-                    </div>
-                    <div className="form-control md:w-1/2 md:ml-4">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Post Title
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Post_Title}
-                          type="text"
-                          name="post_title"
-                          placeholder="Post Title"
-                          className="input input-bordered w-full"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  {/* -----====================>>>>>>>>>>>>>>>>>>> */}
-                  <div className="md:flex mb-8">
-                    <div className="form-control md:w-1/2">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Category
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Category}
-                          type="tel"
-                          name="category"
-                          placeholder="Category"
-                          className="input input-bordered w-full"
-                        />
-                      </label>
-                    </div>
-                    <div className="form-control md:w-1/2 md:ml-4">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Location
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Location}
-                          type="text"
-                          name="location"
-                          placeholder="Location"
-                          className="input input-bordered w-full"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  {/* {=========================>>>>/} */}
-                  <div className="md:flex md:mb-8">
-                    <div className="form-control md:w-1/2">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          No. of volunteers
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.NoOfVolunteers}
-                          type="number"
-                          name="no_of_volunteers_needed"
-                          placeholder="No. of volunteers needed"
-                          className="input input-bordered w-full"
-                        />
-                      </label>
-                    </div>
-                    <div className="form-control md:w-1/2 md:ml-4">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Deadline
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Deadline}
-                          type="date"
-                          name="deadline"
-                          placeholder="Deadline"
-                          className="input input-bordered w-full"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  <div className="md:flex mb-8">
-                    <div className="form-control md:w-1/2">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Organizer name
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Name}
-                          type="text"
-                          name="organizer_name"
-                          placeholder="Please Enter the Name of your Organizer"
-                          className="input input-bordered w-full"
-                          readOnly
-                        />
-                      </label>
-                    </div>
-                    <div className="form-control md:w-1/2 md:ml-4">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Organizer Email
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Email}
-                          type="email"
-                          name="organizer_email"
-                          placeholder="Please Enter the Email of your Organizer"
-                          className="input input-bordered w-full"
-                          readOnly
-                        />
-                      </label>
-                    </div>
-                  </div>
+    <div className="px-4 md:px-6 pb-20">
+      <Helmet>
+        <meta charSet="utf-8" />
+        <title>My Posts | MAD</title>
+      </Helmet>
 
-                  <div className="md:flex mb-8">
-                    <div className="form-control md:w-1/2">
-                      <label className="label">
-                        <span className="label-text">Name</span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Name}
-                          type="text"
-                          name="username"
-                          placeholder="Logged in User Name"
-                          className="input input-bordered w-full"
-                          readOnly
-                        />
-                      </label>
-                    </div>
-                    <div className="form-control md:w-1/2 md:ml-4">
-                      <label className="label">
-                        <span className="label-text">Email</span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Email}
-                          type="text"
-                          name="email"
-                          placeholder="Logged in User Email"
-                          className="input input-bordered w-full"
-                          readOnly
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  {/* form Photo url row */}
-                  <div className="mb-8">
-                    <div className="form-control w-full">
-                      <label className="label">
-                        <span className="label-text text-xl font-semibold">
-                          Description
-                        </span>
-                      </label>
-                      <label className="input-group">
-                        <input
-                          defaultValue={personal.Description}
-                          type="text"
-                          name="description"
-                          placeholder="Please Enter a Description"
-                          className="input input-bordered w-full"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  <input
-                    type="submit"
-                    value="Update"
-                    className="btn btn-block btn-accent"
-                  />
-                </form>
+      <header className="page-header">
+        <p className="eyebrow">Manage</p>
+        <h1>Your <span className="text-gradient">volunteer posts</span></h1>
+        <p>
+          Edit details, update the number of volunteers needed, or remove posts
+          you&apos;ve filled.
+        </p>
+      </header>
+
+      <div className="max-w-6xl mx-auto flex items-center justify-between mb-6">
+        <p className="text-sm opacity-70">
+          {loading ? "Loading…" : `${personalData.length} post${personalData.length === 1 ? "" : "s"}`}
+        </p>
+        <NavLink to="/addvolunteerpost">
+          <button className="btn-pill-primary btn h-11 min-h-0 px-5 gap-2">
+            <FaPlus /> New post
+          </button>
+        </NavLink>
+      </div>
+
+      {loading ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {[0, 1, 2].map((i) => <SkeletonCard key={i} />)}
+        </div>
+      ) : personalData.length === 0 ? (
+        <div className="max-w-2xl mx-auto">
+          <div className="empty-state">
+            <div className="w-48 h-48 -mb-4">
+              <Lottie animationData={emptyAnim} loop={true} />
+            </div>
+            <h3 className="text-xl font-bold mb-1">No posts yet</h3>
+            <p className="opacity-70 mb-5 max-w-md">
+              Create your first volunteer post and start reaching people who care
+              about the same cause.
+            </p>
+            <NavLink to="/addvolunteerpost">
+              <button className="btn-pill-primary btn h-11 min-h-0 px-6 gap-2">
+                <FaPlus /> Create a post
+              </button>
+            </NavLink>
+          </div>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {personalData.map((post) => (
+            <div key={post._id} className="surface-card overflow-hidden flex flex-col">
+              <div className="h-44 overflow-hidden">
+                <Thumbnail
+                  src={post.Thumbnail}
+                  alt={post.Post_Title}
+                  category={post.Category}
+                  seed={post._id}
+                />
+              </div>
+              <div className="p-5 flex flex-col flex-1">
+                <span className="chip mb-3 self-start"><FaTag className="text-xs" /> {post.Category}</span>
+                <h3 className="text-lg font-bold leading-snug line-clamp-2 min-h-[3rem]">
+                  {post.Post_Title}
+                </h3>
+                <div className="mt-3 space-y-1.5">
+                  <div className="meta-row"><FaLocationDot /> {post.Location || "Remote"}</div>
+                  <div className="meta-row"><FaRegCalendarAlt /> {formatDate(post.Deadline)}</div>
+                </div>
+                <div className="mt-5 pt-4 border-t border-base-200 flex gap-2">
+                  <button
+                    onClick={() => openEdit(post)}
+                    className="btn-soft btn-soft-accent flex-1 justify-center"
+                  >
+                    <FiEdit2 /> Update
+                  </button>
+                  <button
+                    onClick={() => handleDelete(post._id)}
+                    className="btn-soft btn-soft-danger justify-center"
+                    aria-label="Delete post"
+                  >
+                    <FiTrash2 />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="modal-action">
-              <form method="dialog">
-                {/* if there is a button, it will close the modal */}
-                <button className="btn">Close</button>
-              </form>
-            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Update modal */}
+      <dialog id="update-modal" className="modal">
+        <div className="modal-box max-w-3xl p-0 rounded-2xl bg-base-100">
+          <div className="p-6 md:p-8 border-b border-base-200">
+            <h2 className="text-2xl font-bold">Update your post</h2>
+            <p className="opacity-70 text-sm mt-1">
+              Make changes below — they go live immediately.
+            </p>
           </div>
-        </dialog>
-      </div>
+
+          {editing && (
+            <form onSubmit={handleUpdate} className="p-6 md:p-8 space-y-5">
+              <div>
+                <label className="field-label" htmlFor="upd-post-title">Post title</label>
+                <input
+                  id="upd-post-title"
+                  defaultValue={editing.Post_Title}
+                  name="post_title"
+                  className="field-input"
+                  required
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <label className="field-label" htmlFor="upd-category">Category</label>
+                  <select
+                    id="upd-category"
+                    defaultValue={editing.Category || ""}
+                    name="category"
+                    className="field-input"
+                    required
+                  >
+                    <option value="" disabled>Select a category</option>
+                    {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="upd-location">Location</label>
+                  <input
+                    id="upd-location"
+                    defaultValue={editing.Location}
+                    name="location"
+                    className="field-input"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="upd-vols">Volunteers needed</label>
+                  <input
+                    id="upd-vols"
+                    defaultValue={editing.NoOfVolunteers}
+                    name="no_of_volunteers_needed"
+                    type="number"
+                    min="0"
+                    className="field-input"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="upd-deadline">Deadline</label>
+                  <input
+                    id="upd-deadline"
+                    defaultValue={editing.Deadline}
+                    name="deadline"
+                    type="date"
+                    className="field-input"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="upd-org-name">Organizer name</label>
+                  <input
+                    id="upd-org-name"
+                    defaultValue={editing.OrganizerName || editing.Name}
+                    name="organizer_name"
+                    className="field-input"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="upd-org-email">Organizer email</label>
+                  <input
+                    id="upd-org-email"
+                    defaultValue={editing.OrganizerEmail || editing.Email}
+                    name="organizer_email"
+                    type="email"
+                    className="field-input"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="field-label" htmlFor="upd-description">Description</label>
+                <textarea
+                  id="upd-description"
+                  defaultValue={editing.Description}
+                  name="description"
+                  className="field-input field-textarea"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" className="btn-pill-primary btn h-12 min-h-0 px-6 flex-1">
+                  Save changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("update-modal").close()}
+                  className="btn-pill-ghost btn h-12 min-h-0 px-6"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
   );
 };

@@ -1,264 +1,212 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Helmet } from "react-helmet";
 import Swal from "sweetalert2";
+import { apiSend } from "../../api";
 import { AuthContext } from "../../Provider/ContextProvider";
+
+const CATEGORIES = [
+  "Healthcare",
+  "Education",
+  "Social Service",
+  "Environmental Conservation",
+  "Animal Welfare",
+  "Disaster Relief",
+  "Community Development",
+  "Other",
+];
 
 const AddVolunteerPost = () => {
   const { user } = useContext(AuthContext);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleAddPost = (e) => {
     e.preventDefault();
     const form = e.target;
-    const Thumbnail = form.thumbnail.value;
-    const Post_Title = form.post_title.value;
-    const Category = form.category.value;
-    const Location = form.location.value;
-    const NoOfVolunteers = parseInt(form.no_of_volunteers_needed.value);
-    const Deadline = form.deadline.value;
-    const OrganizerName = form.organizer_name.value;
-    const OrganizerEmail = form.organizer_email.value;
-    const Description = form.description.value;
-    const Email = form.email.value;
-    const Name = form.username.value;
-
     const newPost = {
-      Thumbnail,
-      Post_Title,
-      Category,
-      Location,
-      NoOfVolunteers,
-      Deadline,
-      OrganizerName,
-      OrganizerEmail,
-      Description,
-      Email,
-      Name,
+      Post_Title: form.post_title.value.trim(),
+      Category: form.category.value,
+      Location: form.location.value.trim(),
+      NoOfVolunteers: parseInt(form.no_of_volunteers_needed.value, 10),
+      Deadline: form.deadline.value,
+      OrganizerName: form.organizer_name.value.trim(),
+      OrganizerEmail: form.organizer_email.value.trim(),
+      Description: form.description.value.trim(),
+      Email: user?.email,
+      Name: user?.displayName,
     };
 
-    // Sending Data to The server
-
-    fetch("https://assignment-11-server-psi-cyan.vercel.app/volunteer", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(newPost),
-    })
-      .then((res) => res.json())
+    setSubmitting(true);
+    apiSend("/volunteer", newPost)
       .then((data) => {
-        // console.log(data);
-        if(data.insertedId){
-            Swal.fire({
-                title: "Success!",
-                text: "Post Added Successfully",
-                icon: "success",
-                confirmButtonText: "Okay",
-              });
-    
+        if (data?.insertedId) {
+          Swal.fire({
+            title: "Posted",
+            text: "Your volunteer post is now live.",
+            icon: "success",
+            confirmButtonText: "Okay",
+          });
+          form.reset();
         }
-      });
-      form.reset();
+      })
+      .catch(() =>
+        Swal.fire("Something went wrong", "Please try again.", "error")
+      )
+      .finally(() => setSubmitting(false));
   };
 
   return (
-    <div className="p-16">
+    <div className="px-4 md:px-6 pb-20">
       <Helmet>
         <meta charSet="utf-8" />
-        <title>Add Post|MAD</title>
-        <link rel="canonical" href="http://mysite.com/example" />
+        <title>Add Volunteer Post | MAD</title>
       </Helmet>
-      <h2 className="text-3xl font-extrabold text-center pb-10">
-        Add Volunteer Post
-      </h2>
-      <form onSubmit={handleAddPost}>
-        {/* form name and quantity row */}
-        <div className="md:flex mb-8">
-          <div className="form-control md:w-1/2">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">
-                Thumbnail
-              </span>
-            </label>
-            <label className="input-group">
-              <input
-                type="text"
-                name="thumbnail"
-                placeholder="Thumbnail"
-                className="input input-bordered w-full"
-                required
-              />
-            </label>
-          </div>
-          <div className="form-control md:w-1/2 md:ml-4">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">
-                Post Title
-              </span>
-            </label>
-            <label className="input-group">
-              <input
-                type="text"
-                name="post_title"
-                placeholder="Post Title"
-                className="input input-bordered w-full"
-                required
-              />
-            </label>
-          </div>
+
+      <header className="page-header">
+        <p className="eyebrow">Organizer</p>
+        <h1>Post a <span className="text-gradient">volunteer need</span></h1>
+        <p>
+          Fill in the details below. Clear, specific posts attract the right
+          volunteers and fill faster.
+        </p>
+      </header>
+
+      <form
+        onSubmit={handleAddPost}
+        className="max-w-3xl mx-auto surface-card p-6 md:p-8 space-y-5"
+      >
+        <div>
+          <label className="field-label" htmlFor="post_title">Post title</label>
+          <input
+            id="post_title"
+            type="text"
+            name="post_title"
+            placeholder="e.g. Volunteers needed for beach cleanup"
+            className="field-input"
+            required
+          />
         </div>
-        {/* -----====================>>>>>>>>>>>>>>>>>>> */}
-        <div className="md:flex mb-8">
-          <div className="form-control md:w-1/2">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">Category</span>
-            </label>
-            <label className="input-group">
-              <input
-                type="tel"
-                name="category"
-                placeholder="Category"
-                className="input input-bordered w-full"
-              />
-            </label>
+
+        <div className="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label className="field-label" htmlFor="category">Category</label>
+            <select
+              id="category"
+              name="category"
+              className="field-input"
+              required
+              defaultValue=""
+            >
+              <option value="" disabled>Select a category</option>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
-          <div className="form-control md:w-1/2 md:ml-4">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">Location</span>
-            </label>
-            <label className="input-group">
-              <input
-                type="text"
-                name="location"
-                placeholder="Location"
-                className="input input-bordered w-full"
-              />
-            </label>
+          <div>
+            <label className="field-label" htmlFor="location">Location</label>
+            <input
+              id="location"
+              type="text"
+              name="location"
+              placeholder="e.g. Gulshan, Dhaka"
+              className="field-input"
+              required
+            />
           </div>
-        </div>
-        {/* {=========================>>>>/} */}
-        <div className="md:flex md:mb-8">
-          <div className="form-control md:w-1/2">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">
-                No. of volunteers
-              </span>
+          <div>
+            <label className="field-label" htmlFor="no_of_volunteers_needed">
+              Number of volunteers needed
             </label>
-            <label className="input-group">
-              <input
-                type="number"
-                name="no_of_volunteers_needed"
-                placeholder="No. of volunteers needed"
-                className="input input-bordered w-full"
-                required
-              />
-            </label>
+            <input
+              id="no_of_volunteers_needed"
+              type="number"
+              name="no_of_volunteers_needed"
+              min="1"
+              placeholder="e.g. 5"
+              className="field-input"
+              required
+            />
           </div>
-          <div className="form-control md:w-1/2 md:ml-4">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">Deadline</span>
-            </label>
-            <label className="input-group">
-              <input
-                type="date"
-                name="deadline"
-                placeholder="Deadline"
-                className="input input-bordered w-full"
-              />
-            </label>
-          </div>
-        </div>
-        <div className="md:flex mb-8">
-          <div className="form-control md:w-1/2">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">
-                Organizer name
-              </span>
-            </label>
-            <label className="input-group">
-              <input
-                type="text"
-                name="organizer_name"
-                placeholder="Please Enter the Name of your Organizer"
-                className="input input-bordered w-full"
-                required
-              />
-            </label>
-          </div>
-          <div className="form-control md:w-1/2 md:ml-4">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">
-                Organizer Email
-              </span>
-            </label>
-            <label className="input-group">
-              <input
-                type="email"
-                name="organizer_email"
-                placeholder="Please Enter the Email of your Organizer"
-                className="input input-bordered w-full"
-                required
-              />
-            </label>
+          <div>
+            <label className="field-label" htmlFor="deadline">Deadline</label>
+            <input
+              id="deadline"
+              type="date"
+              name="deadline"
+              className="field-input"
+              required
+            />
           </div>
         </div>
 
-        <div className="md:flex mb-8">
-          <div className="form-control md:w-1/2">
-            <label className="label">
-              <span className="label-text">Name</span>
-            </label>
-            <label className="input-group">
-              <input
-                defaultValue={user?.displayName}
-                type="text"
-                name="username"
-                placeholder="Logged in User Name"
-                className="input input-bordered w-full"
-                required
-                readOnly
-              />
-            </label>
+        <div className="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label className="field-label" htmlFor="organizer_name">Organizer name</label>
+            <input
+              id="organizer_name"
+              type="text"
+              name="organizer_name"
+              placeholder="Organization or contact name"
+              className="field-input"
+              required
+            />
           </div>
-          <div className="form-control md:w-1/2 md:ml-4">
-            <label className="label">
-              <span className="label-text">Email</span>
-            </label>
-            <label className="input-group">
-              <input
-                defaultValue={user?.email}
-                type="text"
-                name="email"
-                placeholder="Logged in User Email"
-                className="input input-bordered w-full"
-                required
-                readOnly
-              />
-            </label>
+          <div>
+            <label className="field-label" htmlFor="organizer_email">Organizer email</label>
+            <input
+              id="organizer_email"
+              type="email"
+              name="organizer_email"
+              placeholder="contact@organization.com"
+              className="field-input"
+              required
+            />
           </div>
         </div>
-        {/* form Photo url row */}
-        <div className="mb-8">
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text text-xl font-semibold">
-                Description
-              </span>
-            </label>
-            <label className="input-group">
-              <input
-                type="text"
-                name="description"
-                placeholder="Please Enter a Description"
-                className="input input-bordered w-full"
-              />
-            </label>
+
+        <div>
+          <label className="field-label" htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="What will volunteers do? When and where? What should they bring?"
+            className="field-input field-textarea"
+            required
+          />
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-5 pt-2 border-t border-base-200">
+          <div>
+            <label className="field-label">Posted by</label>
+            <input
+              defaultValue={user?.displayName || ""}
+              className="field-input"
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="field-label">Your email</label>
+            <input
+              defaultValue={user?.email || ""}
+              className="field-input"
+              readOnly
+            />
           </div>
         </div>
-        <input
-          type="submit"
-          value="Add Post"
-          className="btn btn-block btn-accent"
-        />
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2">
+          <button
+            type="reset"
+            className="btn-pill-ghost btn h-12 min-h-0 px-8"
+          >
+            Clear
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-pill-primary btn h-12 min-h-0 px-8"
+          >
+            {submitting ? "Posting…" : "Publish post"}
+          </button>
+        </div>
       </form>
     </div>
   );
